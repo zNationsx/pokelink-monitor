@@ -94,6 +94,15 @@
 <script>
 (() => {
   const DB = 'https://pokelink-monitor-default-rtdb.firebaseio.com';
+  // versão desta página: ao subir um index.html novo, troque este número. O celular percebe sozinho e recarrega.
+  const VERSAO_PAGINA = '3';
+  async function conferirPagina() {
+    try {
+      const r = await fetch(location.pathname + '?nocache=' + Date.now(), { cache: 'no-store' });
+      const m = (await r.text()).match(/const VERSAO_PAGINA = '([^']+)'/);
+      if (m && m[1] !== VERSAO_PAGINA) location.replace(location.pathname + '?v=' + m[1]);
+    } catch (e) {}
+  }
   const app = document.getElementById('app');
   const tabs = document.getElementById('tabs');
   const esc = (t) => String(t == null ? '' : t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -342,7 +351,10 @@
   setInterval(() => { if (!document.hidden && codigo && !aoVivo) buscar(); }, 30000);
   // o "atualizado há" anda sozinho
   setInterval(() => { const q = document.getElementById('quando'); if (q) q.textContent = quando(); }, 1000);
+  conferirPagina();
+  setInterval(conferirPagina, 10 * 60 * 1000);
   document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) conferirPagina();
     if (document.hidden || !codigo) return;
     buscar();
     if (!es || es.readyState === 2) ligarAoVivo(); // voltou para a página: reconecta se caiu
