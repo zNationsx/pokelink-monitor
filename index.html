@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#120810">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="robots" content="noindex">
+<title>PokeLink Monitor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* PokeLink Monitor — página do celular. Só LÊ o resumo que o PokeLink do PC manda. */
+  :root { --bg: #120810; --card: #1f0f1a; --card2: #2a1424; --line: #4a2a3a; --txt: #ffe9f3; --mut: #c8a6b8;
+    --gold: #f2c75c; --frame: #c99a3e; --frame2: #6b4a2a; --ok: #6fdc95; --okTxt: #bff0cf; --warn: #ffb35c; --warnTxt: #ffd3a1;
+    --roxo: #8a5cc7; color-scheme: dark; }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; background: var(--bg); color: var(--txt); font: 400 15px/1.4 Inter, system-ui, -apple-system, "Segoe UI", sans-serif; -webkit-text-size-adjust: 100%; }
+  body { padding: env(safe-area-inset-top, 0px) 0 env(safe-area-inset-bottom, 0px); min-height: 100vh; }
+  button, input { font: inherit; color: inherit; }
+  .wrap { max-width: 520px; margin: 0 auto; padding: 18px 16px 96px; display: flex; flex-direction: column; gap: 16px; }
+  .t { font-family: "Barlow Condensed", "Arial Narrow", sans-serif; font-weight: 700; letter-spacing: 1.2px; color: var(--gold); margin: 0; font-size: 18px; }
+  .mut { color: var(--mut); font-size: 12px; }
+  .frame { background: var(--card); border: 2px solid var(--frame); box-shadow: inset 0 0 0 2px var(--card), inset 0 0 0 3px var(--frame2); border-radius: 14px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; }
+  .row { display: flex; align-items: center; gap: 10px; }
+  .sp { justify-content: space-between; }
+  .grow { flex: 1; min-width: 0; }
+  .g3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .g2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .mini { background: var(--card2); border-radius: 10px; padding: 8px 10px; display: flex; flex-direction: column; min-width: 0; }
+  .mini small { font-size: 10px; color: var(--mut); letter-spacing: .5px; text-transform: uppercase; }
+  .mini b { font-weight: 700; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .big { font-family: "Barlow Condensed", sans-serif; font-weight: 700; font-size: 26px; line-height: 1.1; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+  .pill.ok { background: #1f2a1c; border: 1px solid #3f6b45; color: var(--okTxt); }
+  .pill.warn { background: #2c2015; border: 1px solid #6b4a25; color: var(--warnTxt); }
+  .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+  .bar { height: 8px; border-radius: 99px; background: var(--card2); overflow: hidden; }
+  .bar i { display: block; height: 100%; }
+  .logo { width: 40px; height: 40px; border-radius: 10px; background: #3a1820; border: 2px solid var(--frame); box-shadow: inset 0 0 0 2px #3a1820, inset 0 0 0 3px #7a5a2c; display: grid; place-items: center; flex: none; }
+  .conta { display: flex; flex-direction: column; gap: 10px; padding: 14px; text-align: left; width: 100%; cursor: pointer; }
+  .conta:active { transform: translateY(1px); }
+  .num { width: 32px; height: 32px; border-radius: 8px; background: #4a2a63; border: 1px solid var(--roxo); display: grid; place-items: center; font-family: "Barlow Condensed", sans-serif; font-weight: 700; font-size: 18px; color: #f0e2ff; flex: none; }
+  .ell { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  nav.tabs { position: fixed; left: 0; right: 0; bottom: 0; padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px)); background: rgba(18, 8, 16, .94); backdrop-filter: blur(8px); border-top: 1px solid #2a1424; }
+  nav.tabs .in { max-width: 520px; margin: 0 auto; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .tab { min-height: 48px; border-radius: 12px; background: var(--card); border: 2px solid var(--line); display: flex; align-items: center; justify-content: center; gap: 8px;
+    font-family: "Barlow Condensed", sans-serif; font-weight: 700; font-size: 16px; letter-spacing: 1px; cursor: pointer; }
+  .tab.on { background: #3a1820; border-color: var(--frame); box-shadow: inset 0 0 0 2px #3a1820, inset 0 0 0 3px #7a5a2c; color: var(--gold); }
+  .badge { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 99px; background: var(--warn); color: #2a1406; font: 700 12px Inter, sans-serif; display: grid; place-items: center; }
+  .icon-btn { width: 44px; height: 44px; border-radius: 12px; background: var(--card); border: 1px solid var(--line); display: grid; place-items: center; cursor: pointer; flex: none; }
+  .sec { padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+  .cap { display: flex; align-items: center; gap: 10px; padding-bottom: 8px; border-bottom: 1px solid #3a2030; }
+  .cap:last-child { border-bottom: 0; padding-bottom: 0; }
+  .img { width: 36px; height: 36px; border-radius: 8px; background: var(--card2); object-fit: contain; flex: none; image-rendering: pixelated; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { padding: 3px 8px; border-radius: 99px; background: var(--card2); border: 1px solid var(--line); font-size: 12px; color: #e6cfd8; }
+  .itens { display: flex; flex-wrap: wrap; gap: 8px; }
+  .it { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px 3px 4px; border-radius: 8px; background: var(--card2); font-size: 12px; font-weight: 600; }
+  .it img { width: 22px; height: 22px; object-fit: contain; image-rendering: pixelated; }
+  .kv { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; }
+  .kv span:last-child { color: var(--mut); text-align: right; }
+  .aviso { display: flex; gap: 12px; padding: 12px; }
+  .msg { padding: 28px 18px; text-align: center; color: var(--mut); }
+  .entrar { display: flex; flex-direction: column; gap: 14px; padding: 22px 18px; }
+  .entrar input { width: 100%; min-height: 52px; padding: 0 14px; border-radius: 12px; background: var(--card2); border: 1px solid var(--line); color: var(--gold);
+    font: 700 20px/1 ui-monospace, Consolas, monospace; letter-spacing: 2px; text-transform: uppercase; text-align: center; }
+  .entrar input:focus { outline: 2px solid var(--frame); outline-offset: 1px; }
+  .go { min-height: 50px; border-radius: 12px; border: 2px solid var(--frame); background: #3a1820; box-shadow: inset 0 0 0 2px #3a1820, inset 0 0 0 3px #7a5a2c;
+    color: var(--gold); font-family: "Barlow Condensed", sans-serif; font-weight: 700; font-size: 18px; letter-spacing: 1px; cursor: pointer; }
+  .erro { color: #ff9aa5; font-size: 13px; text-align: center; }
+  @media (prefers-reduced-motion: no-preference) { .fade { animation: fade .18s ease-out; } @keyframes fade { from { opacity: 0; transform: translateY(4px); } } }
+</style>
+</head>
+<body>
+<main class="wrap" id="app"><div class="msg">Carregando...</div></main>
+<nav class="tabs" id="tabs" hidden><div class="in">
+  <button class="tab on" data-tela="resumo">RESUMO</button>
+  <button class="tab" data-tela="avisos">AVISOS <span class="badge" id="nAvisos" hidden></span></button>
+</div></nav>
+<script>
+(() => {
+  const DB = 'https://pokelink-monitor-default-rtdb.firebaseio.com';
+  const app = document.getElementById('app');
+  const tabs = document.getElementById('tabs');
+  const esc = (t) => String(t == null ? '' : t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const urlOk = (u) => (/^(https:\/\/|data:image\/)/.test(String(u || '')) ? esc(u) : '');
+  const curto = (n) => { n = Number(n) || 0; const a = Math.abs(n);
+    return a >= 1e9 ? (n / 1e9).toFixed(1).replace('.', ',') + 'B' : a >= 1e6 ? (n / 1e6).toFixed(1).replace('.', ',') + 'M' : a >= 1e3 ? (n / 1e3).toFixed(1).replace('.', ',') + 'k' : String(Math.round(n)); };
+  const ha = (ms) => { const s = Math.max(0, Math.round(ms / 1000)); return s < 60 ? `${s} s` : s < 3600 ? `${Math.round(s / 60)} min` : `${Math.floor(s / 3600)} h ${Math.round((s % 3600) / 60)} min`; };
+  const hora = (t) => new Date(t).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  const guarda = { get: (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} }, del: (k) => { try { localStorage.removeItem(k); } catch (e) {} } };
+
+  // o código chega pelo QR (endereço#CODIGO) ou é digitado; fica guardado neste celular
+  const limpa = (c) => String(c || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+  let codigo = limpa(location.hash.slice(1)) || guarda.get('pl-codigo') || '';
+  if (location.hash) { if (codigo.length >= 20) guarda.set('pl-codigo', codigo); history.replaceState(null, '', location.pathname); }
+  let dados = null, tela = 'resumo', conta = 0, erro = '';
+
+  const LINK_SVG = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f2c75c" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>';
+  const STATUS = {
+    farmando: ['Farmando', 'ok'], parada: ['Sem hunt', 'warn'], carregando: ['Carregando', 'warn'], travada: ['Travada', 'warn'],
+    'sem resposta': ['Sem resposta', 'warn'], 'sem login': ['Sem login', 'warn'], pausado: ['Pausado', 'warn'], fechada: ['Fechada', 'warn'],
+  };
+  const st = (c) => STATUS[c.status] || [c.status || '—', 'warn'];
+  const corDot = (k) => (k === 'ok' ? 'var(--ok)' : 'var(--warn)');
+  const corTxt = (k) => (k === 'ok' ? 'var(--okTxt)' : 'var(--warnTxt)');
+  const COR_AVISO = { erro: '#ffb35c', compra: '#ffb35c', kick: '#f2c75c', hunt: '#a985e0', shiny: '#6fdc95', pc: '#8ec5ff' };
+
+  function telaEntrar(msg) {
+    tabs.hidden = true;
+    app.innerHTML = `<div class="row" style="gap:12px"><div class="logo">${LINK_SVG}</div><div><div class="t" style="font-size:24px">POKELINK</div><div class="mut">Monitor das contas</div></div></div>
+      <form class="frame entrar fade" id="fEntrar">
+        <label for="cod" style="font-weight:600">Código do PokeLink</label>
+        <input id="cod" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ABCD-EFGH-..." value="">
+        ${msg ? `<div class="erro">${esc(msg)}</div>` : ''}
+        <button class="go" type="submit">VER MINHAS CONTAS</button>
+        <div class="mut" style="text-align:center;line-height:1.5">No PC, abra <b>Contas &gt; Ver no celular</b> e leia o QR code com a câmera, ou digite o código que aparece lá.</div>
+      </form>`;
+    document.getElementById('fEntrar').onsubmit = (e) => {
+      e.preventDefault();
+      const c = limpa(document.getElementById('cod').value);
+      if (c.length < 20) { telaEntrar('O código tem 20 letras e números. Confira e tente de novo.'); return; }
+      codigo = c; guarda.set('pl-codigo', c); dados = null; buscar();
+    };
+  }
+
+  async function buscar() {
+    if (!codigo) { telaEntrar(); return; }
+    try {
+      const r = await fetch(`${DB}/m/${codigo}.json`, { cache: 'no-store' });
+      if (!r.ok) throw new Error('o servidor respondeu ' + r.status);
+      const j = await r.json();
+      if (!j) {
+        if (!dados) { guarda.del('pl-codigo'); const c = codigo; codigo = ''; telaEntrar(`Não encontrei o código ${c.slice(0, 4)}... Confira se "Ver no celular" está ligado no PokeLink, ou se o código foi trocado.`); return; }
+        erro = 'O PokeLink desligou o envio ou trocou o código.';
+      } else { dados = j; erro = ''; }
+    } catch (e) { erro = 'Sem conexão: ' + e.message; }
+    desenhar();
+  }
+
+  function cabecalho() {
+    const idade = dados && dados.at ? Date.now() - dados.at : Infinity;
+    const limite = ((dados && dados.intervalo) || 2) * 60000 * 2.5;
+    const pill = dados && dados.pausado ? ['warn', 'Farm pausado'] : idade < limite ? ['ok', 'PC online'] : ['warn', 'Sem notícias'];
+    return `<header class="row sp">
+        <div class="row"><div class="logo">${LINK_SVG}</div><div><div class="t" style="font-size:22px;line-height:1">POKELINK</div><div class="mut">Monitor das contas</div></div></div>
+        <span class="pill ${pill[0]}"><span class="dot" style="background:${corDot(pill[0])}"></span>${pill[1]}</span>
+      </header>
+      <p class="mut" style="margin:-8px 0 0">${dados && dados.at ? `Atualizado há ${ha(idade)} (${hora(dados.at)})` : ''}${erro ? ` · <span style="color:var(--warnTxt)">${esc(erro)}</span>` : ''}</p>`;
+  }
+
+  function resumo() {
+    const cs = dados.contas || [];
+    const t = cs.reduce((a, c) => ({ ouro: a.ouro + (Number(c.ouroH) || 0), xp: a.xp + (Number(c.xpH) || 0), caps: a.caps + (Number(c.capsN) || 0) }), { ouro: 0, xp: 0, caps: 0 });
+    // melhor canal da Kick (o mais perto da próxima meta)
+    let kk = null;
+    cs.forEach((c) => (c.kick || []).forEach((k) => { if (!kk || k.pts > kk.pts) kk = Object.assign({ conta: c.nick }, k); }));
+    const metas = [[300, '+15% XP'], [500, '+15% Capture Boost'], [1000, '+15% Secret Lure']];
+    const prox = kk ? metas.find((m) => kk.pts < m[0]) : null;
+    const tw = cs.filter((c) => c.twitch && c.twitch.length);
+    const twOn = cs.some((c) => c.twitch);
+    return `${cabecalho()}
+      <section class="frame sec fade">
+        <div class="row sp"><h2 class="t">RITMO AGORA</h2><span class="mut">soma das ${cs.length} contas</span></div>
+        <div class="g3">
+          <div class="mini"><small>Ouro/h</small><span class="big" style="color:var(--gold)">${curto(t.ouro)}</span><span class="mut">lucro líquido</span></div>
+          <div class="mini"><small>XP/h</small><span class="big">${curto(t.xp)}</span><span class="mut">treinador</span></div>
+          <div class="mini"><small>Capturas</small><span class="big">${curto(t.caps)}</span><span class="mut">na sessão</span></div>
+        </div>
+      </section>
+      <section style="display:flex;flex-direction:column;gap:10px">
+        <h2 class="t">CONTAS</h2>
+        ${cs.map((c, i) => { const s = st(c); return `<button class="card conta fade" data-conta="${i}" aria-label="Ver ${esc(c.nick)}">
+          <div class="row" style="width:100%"><span class="num">${esc(c.n)}</span>
+            <div class="grow"><div class="ell" style="font-weight:700">${esc(c.nick)} <span class="mut" style="font-size:13px;font-weight:500">${c.nivel ? '· Nv ' + esc(c.nivel) : ''}</span></div>
+              <div class="mut ell">${c.hunt ? esc(c.hunt) : c.antigo ? 'últimos dados conhecidos' : 'sem hunt agora'}</div></div>
+            <span class="row" style="gap:6px;font-size:12px;font-weight:600;color:${corTxt(s[1])}"><span class="dot" style="background:${corDot(s[1])}"></span>${esc(s[0])}</span></div>
+          <div class="g3" style="width:100%">
+            <div class="mini"><small>Ouro/h</small><b style="color:var(--gold)">${c.lucro ? esc(c.lucro.h) : '—'}</b></div>
+            <div class="mini"><small>XP/h</small><b>${c.xpT ? esc(c.xpT.h) : '—'}</b></div>
+            <div class="mini"><small>Capturas</small><b>${c.capturas ? esc(c.capturas.v) : '—'}</b></div>
+          </div></button>`; }).join('')}
+      </section>
+      ${kk || twOn ? `<section class="card sec fade"><h2 class="t">LIVES</h2>
+        ${kk ? `<div style="display:flex;flex-direction:column;gap:6px">
+          <div class="kv"><span style="font-weight:600">Kick · ${esc(kk.slug)}</span><span>${kk.pts.toLocaleString('pt-BR')}${prox ? ' / ' + prox[0] : ''}</span></div>
+          <div class="bar"><i style="width:${prox ? Math.min(100, (kk.pts / prox[0]) * 100) : 100}%;background:var(--ok)"></i></div>
+          <span class="mut">${esc(kk.conta)} · ${prox ? `faltam ${prox[0] - kk.pts} pontos para ${prox[1]}` : 'todas as metas já dá para resgatar'}</span></div>` : ''}
+        ${twOn ? `<div class="kv" style="${kk ? 'padding-top:10px;border-top:1px solid #3a2030' : ''}"><span style="font-weight:600">Twitch</span>
+          <span style="color:${tw.length ? 'var(--okTxt)' : 'var(--mut)'}">${tw.length ? '✓ o jogo está contando o bônus' : 'nenhum bônus contando agora'}</span></div>` : ''}
+      </section>` : ''}
+      <div class="row" style="justify-content:center;padding-top:4px"><button class="mut" id="sair" style="background:none;border:0;text-decoration:underline;min-height:44px;cursor:pointer">Usar outro código</button></div>`;
+  }
+
+  function tileHtml(nome, t, sub) {
+    return `<div class="card" style="padding:12px;display:flex;flex-direction:column;gap:2px"><span class="mut" style="letter-spacing:.6px">${nome}</span>
+      <span class="big">${t ? esc(t.v) : '—'}</span><span class="mut">${t && t.h && t.h !== '0' ? esc(t.h) + ' por hora' : esc(sub || '')}</span></div>`;
+  }
+  function detalhe() {
+    const c = (dados.contas || [])[conta];
+    if (!c) { tela = 'resumo'; return resumo(); }
+    const s = st(c);
+    const pk = c.pk || {};
+    return `<header class="row">
+        <button class="icon-btn" id="voltar" aria-label="Voltar ao resumo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f2c75c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></button>
+        <div class="grow"><div class="t ell" style="font-size:24px;color:var(--txt);line-height:1">${esc(c.nick)}</div>
+          <div class="mut">Conta ${esc(c.n)}${c.nivel ? ' · Nível ' + esc(c.nivel) : ''}${c.modo ? ' · ' + esc(c.modo) : ''}</div></div>
+        <span class="pill ${s[1]}"><span class="dot" style="background:${corDot(s[1])}"></span>${esc(s[0])}</span>
+      </header>
+      <div class="g3 fade">
+        <div class="mini card"><small>Ouro</small><b style="color:var(--gold)">${esc(c.ouro || '—')}</b></div>
+        <div class="mini card"><small>Gemas</small><b>${esc(c.gemas || '—')}</b></div>
+        <div class="mini card"><small>Diamantes</small><b>${esc(c.diam || '—')}</b></div>
+      </div>
+      <section class="frame fade" style="padding:14px;display:flex;gap:14px;align-items:center">
+        ${pk.img ? `<img class="img" style="width:84px;height:84px" src="${urlOk(pk.img)}" alt="">` : '<div class="img" style="width:84px;height:84px"></div>'}
+        <div class="grow" style="display:flex;flex-direction:column;gap:6px">
+          <span class="mut" style="letter-spacing:.6px">EM CAMPO</span>
+          <span style="font-weight:700;font-size:16px">${esc(pk.nome || '—')} <span class="mut" style="font-size:13px;font-weight:500">${esc(pk.lv || '')}</span></span>
+          ${pk.hp != null ? `<div class="row" style="gap:8px"><span class="mut" style="width:18px;font-size:10px">HP</span><div class="bar grow"><i style="width:${Number(pk.hp)}%;background:${pk.hp > 50 ? 'var(--ok)' : pk.hp > 20 ? 'var(--gold)' : '#ff7a85'}"></i></div></div>` : ''}
+          <span class="mut">${c.hunt ? esc(c.hunt) : 'sem hunt agora'}</span>
+        </div>
+      </section>
+      ${(c.ativos || []).length ? `<div class="chips">${c.ativos.map((a) => `<span class="chip">${esc(a)}</span>`).join('')}</div>` : ''}
+      <section style="display:flex;flex-direction:column;gap:10px">
+        <div class="row sp"><h2 class="t">SESSÃO</h2><span class="mut">${c.tempo ? 'há ' + esc(c.tempo) : ''}</span></div>
+        <div class="g2">${tileHtml('XP TREINADOR', c.xpT)}${tileHtml('XP POKÉMON', c.xpP)}${tileHtml('LUCRO LÍQUIDO', c.lucro, 'ouro, já sem gastos')}${tileHtml('ABATES', c.abates)}${tileHtml('CAPTURAS', c.capturas)}
+          <div class="card" style="padding:12px;display:flex;flex-direction:column;gap:6px"><span class="mut" style="letter-spacing:.6px">GASTOS</span>
+            ${(c.gastos || []).length ? `<div class="itens">${c.gastos.map((g) => `<span class="it">${urlOk(g.img) ? `<img src="${urlOk(g.img)}" alt="">` : ''}${esc(g.n)}</span>`).join('')}</div>` : '<span class="mut">—</span>'}</div>
+        </div>
+      </section>
+      <section class="card sec"><h2 class="t">ÚLTIMAS CAPTURAS</h2>
+        ${(c.caps || []).length ? c.caps.map((p) => `<div class="cap">${urlOk(p.img) ? `<img class="img" src="${urlOk(p.img)}" alt="">` : '<div class="img"></div>'}
+          <div class="grow"><div style="font-weight:600">${esc(p.nome)}${p.shiny ? ' <span style="color:var(--gold)">★ shiny</span>' : ''}</div><div class="mut">${esc([p.nv, p.info].filter(Boolean).join(' · '))}</div></div>
+          <span class="mut">${esc(p.hora)}</span></div>`).join('') : '<span class="mut">nenhuma ainda</span>'}
+      </section>
+      ${(c.kick || []).length ? `<section class="card sec"><h2 class="t">PONTOS DA KICK</h2>${c.kick.map((k) => { const m = [300, 500, 1000].find((x) => k.pts < x);
+        return `<div style="display:flex;flex-direction:column;gap:6px"><div class="kv"><span style="font-weight:600">${esc(k.slug)}${k.aberta ? ' <span class="mut">· assistindo</span>' : ''}</span><span>${k.pts.toLocaleString('pt-BR')}${m ? ' / ' + m : ''}</span></div>
+          <div class="bar"><i style="width:${m ? Math.min(100, (k.pts / m) * 100) : 100}%;background:var(--gold)"></i></div></div>`; }).join('')}</section>` : ''}
+      <section class="card sec"><h2 class="t">AUTOMÁTICOS</h2>
+        <div class="kv"><span>Troca de hunt</span><span>${esc(c.troca || 'desligada')}</span></div>
+        <div class="kv"><span>Auto Compra</span><span>${esc(c.auto || 'desligada')}</span></div>
+        ${c.twitch ? `<div class="kv"><span>Twitch</span><span>${c.twitch.length ? 'contando em ' + esc(c.twitch.join(', ')) : 'nenhum bônus contando'}</span></div>` : ''}
+        ${(c.exts || []).length ? `<div class="kv"><span>Extensões</span><span>${c.exts.map((x) => `${esc(x.nome)} ${x.ok ? '✓' : '✗'}`).join(' · ')}</span></div>` : ''}
+      </section>`;
+  }
+
+  function avisos() {
+    const lista = dados.avisos || [];
+    guarda.set('pl-visto', String(Date.now()));
+    return `<header class="row sp"><span class="t" style="font-size:26px">AVISOS</span><span class="mut">do mais novo para o mais antigo</span></header>
+      ${lista.length ? lista.map((a) => `<div class="card aviso fade"><span class="dot" style="width:10px;height:10px;margin-top:5px;background:${COR_AVISO[a.tipo] || '#c8a6b8'}"></span>
+        <div class="grow"><div class="row sp" style="align-items:baseline"><b>${esc(a.titulo)}</b><span class="mut" style="flex:none">${a.em ? hora(a.em) : ''}</span></div>
+        <div style="font-size:13px;color:#d9bccb">${esc(a.texto)}</div></div></div>`).join('') : '<div class="card msg">Nenhum aviso por enquanto. Aqui aparecem conta travada, metas da Kick, shiny, troca de hunt e Auto Compra parada.</div>'}`;
+  }
+
+  function desenhar() {
+    if (!codigo) { telaEntrar(); return; }
+    if (!dados) { app.innerHTML = `<div class="msg">${erro ? esc(erro) : 'Carregando...'}</div>`; return; }
+    tabs.hidden = false;
+    const visto = Number(guarda.get('pl-visto')) || 0;
+    const novos = (dados.avisos || []).filter((a) => a.em > visto).length;
+    const nb = document.getElementById('nAvisos');
+    nb.hidden = !novos || tela === 'avisos'; nb.textContent = novos > 9 ? '9+' : String(novos);
+    tabs.querySelectorAll('.tab').forEach((b) => b.classList.toggle('on', b.dataset.tela === (tela === 'conta' ? 'resumo' : tela)));
+    app.innerHTML = tela === 'avisos' ? avisos() : tela === 'conta' ? detalhe() : resumo();
+    app.querySelectorAll('[data-conta]').forEach((b) => { b.onclick = () => { conta = Number(b.dataset.conta); tela = 'conta'; desenhar(); scrollTo(0, 0); }; });
+    const v = document.getElementById('voltar'); if (v) v.onclick = () => { tela = 'resumo'; desenhar(); };
+    const s = document.getElementById('sair'); if (s) s.onclick = () => { if (confirm('Sair deste código? Você vai precisar ler o QR code de novo.')) { guarda.del('pl-codigo'); codigo = ''; dados = null; telaEntrar(); } };
+  }
+  tabs.querySelectorAll('.tab').forEach((b) => { b.onclick = () => { tela = b.dataset.tela; desenhar(); scrollTo(0, 0); }; });
+
+  // QR lido com a página já aberta
+  addEventListener('hashchange', () => {
+    const c = limpa(location.hash.slice(1));
+    history.replaceState(null, '', location.pathname);
+    if (c.length < 20) return;
+    codigo = c; guarda.set('pl-codigo', c); dados = null; tela = 'resumo'; buscar();
+  });
+  buscar();
+  setInterval(() => { if (!document.hidden && codigo) buscar(); }, 30000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && codigo) buscar(); });
+})();
+</script>
+</body>
+</html>
