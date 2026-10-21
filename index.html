@@ -65,6 +65,14 @@
   .kv { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; }
   .kv span:last-child { color: var(--mut); text-align: right; }
   .aviso { display: flex; gap: 12px; padding: 12px; }
+  .shiny { position: relative; overflow: hidden; padding: 14px; border-radius: 14px; border: 2px solid #f2c75c;
+    background: radial-gradient(120% 140% at 50% -20%, #5a3a12 0%, #2a1424 55%, #1f0f1a 100%); box-shadow: inset 0 0 0 2px #1f0f1a, inset 0 0 0 3px #8a6a2a, 0 0 18px rgba(242, 199, 92, .18); }
+  .shiny .estrela { position: absolute; color: #ffe08a; opacity: .55; font-size: 14px; pointer-events: none; }
+  .shiny .n { font-family: "Barlow Condensed", sans-serif; font-weight: 700; font-size: 44px; line-height: 1; color: #ffe08a; text-shadow: 0 0 12px rgba(255, 224, 138, .35); }
+  .shiny .n.zero { color: #8a6a7a; text-shadow: none; }
+  .shiny .rot { font-family: "Barlow Condensed", sans-serif; font-weight: 700; letter-spacing: 1.2px; font-size: 14px; color: #f2c75c; }
+  .chip-sh { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 99px; font-size: 12px; font-weight: 700; background: #3a2a12; border: 1px solid #c99a3e; color: #ffe08a; }
+  @media (prefers-reduced-motion: no-preference) { .shiny .estrela { animation: brilho 2.4s ease-in-out infinite; } @keyframes brilho { 50% { opacity: .15; transform: scale(.8); } } }
   .msg { padding: 28px 18px; text-align: center; color: var(--mut); }
   .entrar { display: flex; flex-direction: column; gap: 14px; padding: 22px 18px; }
   .entrar input { width: 100%; min-height: 52px; padding: 0 14px; border-radius: 12px; background: var(--card2); border: 1px solid var(--line); color: var(--gold);
@@ -73,6 +81,7 @@
   .go { min-height: 50px; border-radius: 12px; border: 2px solid var(--frame); background: #3a1820; box-shadow: inset 0 0 0 2px #3a1820, inset 0 0 0 3px #7a5a2c;
     color: var(--gold); font-family: "Barlow Condensed", sans-serif; font-weight: 700; font-size: 18px; letter-spacing: 1px; cursor: pointer; }
   .erro { color: #ff9aa5; font-size: 13px; text-align: center; }
+  .sem-anim .fade, .sem-anim .shiny .estrela { animation: none !important; }
   @media (prefers-reduced-motion: no-preference) { .fade { animation: fade .18s ease-out; } @keyframes fade { from { opacity: 0; transform: translateY(4px); } } }
 </style>
 </head>
@@ -125,35 +134,74 @@
       e.preventDefault();
       const c = limpa(document.getElementById('cod').value);
       if (c.length < 20) { telaEntrar('O código tem 20 letras e números. Confira e tente de novo.'); return; }
-      codigo = c; guarda.set('pl-codigo', c); dados = null; buscar();
+      codigo = c; guarda.set('pl-codigo', c); dados = null; buscar(); ligarAoVivo();
     };
   }
 
+  // dados novos chegaram (pela conexão ao vivo ou pela busca)
+  function receber(j) {
+    if (!j) {
+      if (!dados) { pararAoVivo(); guarda.del('pl-codigo'); const c = codigo; codigo = ''; telaEntrar(`Não encontrei o código ${c.slice(0, 4)}... Confira se "Ver no celular" está ligado no PokeLink, ou se o código foi trocado.`); return; }
+      erro = 'O PokeLink desligou o envio ou trocou o código.';
+    } else { dados = j; erro = ''; }
+    desenhar(false);
+  }
   async function buscar() {
     if (!codigo) { telaEntrar(); return; }
     try {
       const r = await fetch(`${DB}/m/${codigo}.json`, { cache: 'no-store' });
       if (!r.ok) throw new Error('o servidor respondeu ' + r.status);
-      const j = await r.json();
-      if (!j) {
-        if (!dados) { guarda.del('pl-codigo'); const c = codigo; codigo = ''; telaEntrar(`Não encontrei o código ${c.slice(0, 4)}... Confira se "Ver no celular" está ligado no PokeLink, ou se o código foi trocado.`); return; }
-        erro = 'O PokeLink desligou o envio ou trocou o código.';
-      } else { dados = j; erro = ''; }
-    } catch (e) { erro = 'Sem conexão: ' + e.message; }
-    desenhar();
+      receber(await r.json());
+    } catch (e) { erro = 'Sem conexão: ' + e.message; desenhar(false); }
+  }
+  // conexão ao vivo com o Firebase: recebe cada envio do PC no mesmo segundo
+  let es = null, aoVivo = false;
+  function pararAoVivo() { if (es) { es.close(); es = null; } aoVivo = false; }
+  function ligarAoVivo() {
+    pararAoVivo();
+    if (!codigo || !window.EventSource) return;
+    es = new EventSource(`${DB}/m/${codigo}.json`);
+    const aplicar = (ev, junta) => {
+      let m; try { m = JSON.parse(ev.data); } catch (e) { return; }
+      if (!m) return;
+      aoVivo = true;
+      if (m.path === '/') { receber(junta && dados ? Object.assign({}, dados, m.data) : m.data); return; }
+      if (!dados) return;
+      const partes = m.path.split('/').filter(Boolean);
+      let o = dados;
+      partes.slice(0, -1).forEach((k) => { o = o[k] = o[k] || {}; });
+      o[partes[partes.length - 1]] = junta && m.data && typeof m.data === 'object' ? Object.assign({}, o[partes[partes.length - 1]], m.data) : m.data;
+      desenhar(false);
+    };
+    es.addEventListener('put', (ev) => aplicar(ev, false));
+    es.addEventListener('patch', (ev) => aplicar(ev, true));
+    es.addEventListener('cancel', () => { pararAoVivo(); });
+    es.onerror = () => { aoVivo = false; }; // o navegador tenta reconectar sozinho; enquanto isso, a busca de 30 s cobre
   }
 
+  const quando = () => (dados && dados.at ? `${aoVivo ? '● ao vivo · ' : ''}atualizado há ${ha(Date.now() - dados.at)} (${new Date(dados.at).toLocaleTimeString('pt-BR')})` : '');
   function cabecalho() {
     const idade = dados && dados.at ? Date.now() - dados.at : Infinity;
-    const limite = ((dados && dados.intervalo) || 2) * 60000 * 2.5;
+    const limite = dados && dados.intervaloSeg ? Math.max(90000, dados.intervaloSeg * 4000) : ((dados && dados.intervalo) || 2) * 60000 * 2.5;
     const pill = dados && dados.pausado ? ['warn', 'Farm pausado'] : idade < limite ? ['ok', 'PC online'] : ['warn', 'Sem notícias'];
     return `<header class="row sp">
         <div class="row"><div class="logo">${LINK_SVG}</div><div><div class="t" style="font-size:22px;line-height:1">POKELINK</div><div class="mut">Monitor das contas</div></div></div>
         <span class="pill ${pill[0]}"><span class="dot" style="background:${corDot(pill[0])}"></span>${pill[1]}</span>
       </header>
-      <p class="mut" style="margin:-8px 0 0">${dados && dados.at ? `Atualizado há ${ha(idade)} (${hora(dados.at)})` : ''}${erro ? ` · <span style="color:var(--warnTxt)">${esc(erro)}</span>` : ''}</p>`;
+      <p class="mut" style="margin:-8px 0 0"><span id="quando">${quando()}</span>${erro ? ` · <span style="color:var(--warnTxt)">${esc(erro)}</span>` : ''}</p>`;
   }
 
+  // destaque dourado: shiny vistos e pegos (ACHADOS · HUNT do jogo)
+  function blocoShiny(vistos, pegos, titulo, sub) {
+    return `<section class="shiny fade" aria-label="Shiny: ${vistos} vistos e ${pegos} pegos">
+      <span class="estrela" style="left:7%;top:14%" aria-hidden="true">✦</span><span class="estrela" style="right:5%;bottom:14%;animation-delay:.8s" aria-hidden="true">✦</span>
+      <span class="estrela" style="left:46%;bottom:10%;animation-delay:1.6s" aria-hidden="true">✧</span>
+      <div class="row sp" style="margin-bottom:10px"><h2 class="t" style="color:#ffe08a">✦ ${titulo}</h2><span class="mut">${sub}</span></div>
+      <div class="g2" style="text-align:center">
+        <div style="display:flex;flex-direction:column;gap:4px"><span class="n${vistos ? '' : ' zero'}">${vistos}</span><span class="rot">VISTOS</span></div>
+        <div style="display:flex;flex-direction:column;gap:4px;border-left:1px solid #5a3a2a"><span class="n${pegos ? '' : ' zero'}">${pegos}</span><span class="rot">PEGOS</span></div>
+      </div></section>`;
+  }
   function resumo() {
     const cs = dados.contas || [];
     const t = cs.reduce((a, c) => ({ ouro: a.ouro + (Number(c.ouroH) || 0), xp: a.xp + (Number(c.xpH) || 0), caps: a.caps + (Number(c.capsN) || 0) }), { ouro: 0, xp: 0, caps: 0 });
@@ -164,7 +212,10 @@
     const prox = kk ? metas.find((m) => kk.pts < m[0]) : null;
     const tw = cs.filter((c) => c.twitch && c.twitch.length);
     const twOn = cs.some((c) => c.twitch);
+    const comShiny = cs.filter((c) => c.shiny);
+    const sh = comShiny.reduce((a, c) => ({ v: a.v + (Number(c.shiny.vistos) || 0), p: a.p + (Number(c.shiny.pegos) || 0) }), { v: 0, p: 0 });
     return `${cabecalho()}
+      ${comShiny.length ? blocoShiny(sh.v, sh.p, 'SHINY', 'nesta hunt · ' + comShiny.length + (comShiny.length === 1 ? ' conta' : ' contas')) : ''}
       <section class="frame sec fade">
         <div class="row sp"><h2 class="t">RITMO AGORA</h2><span class="mut">soma das ${cs.length} contas</span></div>
         <div class="g3">
@@ -178,7 +229,8 @@
         ${cs.map((c, i) => { const s = st(c); return `<button class="card conta fade" data-conta="${i}" aria-label="Ver ${esc(c.nick)}">
           <div class="row" style="width:100%"><span class="num">${esc(c.n)}</span>
             <div class="grow"><div class="ell" style="font-weight:700">${esc(c.nick)} <span class="mut" style="font-size:13px;font-weight:500">${c.nivel ? '· Nv ' + esc(c.nivel) : ''}</span></div>
-              <div class="mut ell">${c.hunt ? esc(c.hunt) : c.antigo ? 'últimos dados conhecidos' : 'sem hunt agora'}</div></div>
+              <div class="mut ell">${c.hunt ? esc(c.hunt) : c.antigo ? 'últimos dados conhecidos' : 'sem hunt agora'}</div>
+              ${c.shiny && (c.shiny.vistos || c.shiny.pegos) ? `<span class="chip-sh" style="margin-top:4px">✦ ${Number(c.shiny.vistos) || 0} ${Number(c.shiny.vistos) === 1 ? 'visto' : 'vistos'} · ${Number(c.shiny.pegos) || 0} ${Number(c.shiny.pegos) === 1 ? 'pego' : 'pegos'}</span>` : ''}</div>
             <span class="row" style="gap:6px;font-size:12px;font-weight:600;color:${corTxt(s[1])}"><span class="dot" style="background:${corDot(s[1])}"></span>${esc(s[0])}</span></div>
           <div class="g3" style="width:100%">
             <div class="mini"><small>Ouro/h</small><b style="color:var(--gold)">${c.lucro ? esc(c.lucro.h) : '—'}</b></div>
@@ -226,6 +278,7 @@
           <span class="mut">${c.hunt ? esc(c.hunt) : 'sem hunt agora'}</span>
         </div>
       </section>
+      ${c.shiny ? blocoShiny(Number(c.shiny.vistos) || 0, Number(c.shiny.pegos) || 0, 'SHINY', 'nesta hunt') : ''}
       ${(c.ativos || []).length ? `<div class="chips">${c.ativos.map((a) => `<span class="chip">${esc(a)}</span>`).join('')}</div>` : ''}
       <section style="display:flex;flex-direction:column;gap:10px">
         <div class="row sp"><h2 class="t">SESSÃO</h2><span class="mut">${c.tempo ? 'há ' + esc(c.tempo) : ''}</span></div>
@@ -259,7 +312,8 @@
         <div style="font-size:13px;color:#d9bccb">${esc(a.texto)}</div></div></div>`).join('') : '<div class="card msg">Nenhum aviso por enquanto. Aqui aparecem conta travada, metas da Kick, shiny, troca de hunt e Auto Compra parada.</div>'}`;
   }
 
-  function desenhar() {
+  function desenhar(anim) {
+    app.classList.toggle('sem-anim', anim === false);
     if (!codigo) { telaEntrar(); return; }
     if (!dados) { app.innerHTML = `<div class="msg">${erro ? esc(erro) : 'Carregando...'}</div>`; return; }
     tabs.hidden = false;
@@ -271,7 +325,7 @@
     app.innerHTML = tela === 'avisos' ? avisos() : tela === 'conta' ? detalhe() : resumo();
     app.querySelectorAll('[data-conta]').forEach((b) => { b.onclick = () => { conta = Number(b.dataset.conta); tela = 'conta'; desenhar(); scrollTo(0, 0); }; });
     const v = document.getElementById('voltar'); if (v) v.onclick = () => { tela = 'resumo'; desenhar(); };
-    const s = document.getElementById('sair'); if (s) s.onclick = () => { if (confirm('Sair deste código? Você vai precisar ler o QR code de novo.')) { guarda.del('pl-codigo'); codigo = ''; dados = null; telaEntrar(); } };
+    const s = document.getElementById('sair'); if (s) s.onclick = () => { if (confirm('Sair deste código? Você vai precisar ler o QR code de novo.')) { pararAoVivo(); guarda.del('pl-codigo'); codigo = ''; dados = null; telaEntrar(); } };
   }
   tabs.querySelectorAll('.tab').forEach((b) => { b.onclick = () => { tela = b.dataset.tela; desenhar(); scrollTo(0, 0); }; });
 
@@ -280,11 +334,19 @@
     const c = limpa(location.hash.slice(1));
     history.replaceState(null, '', location.pathname);
     if (c.length < 20) return;
-    codigo = c; guarda.set('pl-codigo', c); dados = null; tela = 'resumo'; buscar();
+    codigo = c; guarda.set('pl-codigo', c); dados = null; tela = 'resumo'; buscar(); ligarAoVivo();
   });
   buscar();
-  setInterval(() => { if (!document.hidden && codigo) buscar(); }, 30000);
-  document.addEventListener('visibilitychange', () => { if (!document.hidden && codigo) buscar(); });
+  ligarAoVivo();
+  // plano B: sem a conexão ao vivo, busca de 30 em 30 segundos
+  setInterval(() => { if (!document.hidden && codigo && !aoVivo) buscar(); }, 30000);
+  // o "atualizado há" anda sozinho
+  setInterval(() => { const q = document.getElementById('quando'); if (q) q.textContent = quando(); }, 1000);
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden || !codigo) return;
+    buscar();
+    if (!es || es.readyState === 2) ligarAoVivo(); // voltou para a página: reconecta se caiu
+  });
 })();
 </script>
 </body>
