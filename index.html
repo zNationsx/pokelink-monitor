@@ -105,7 +105,7 @@
 (() => {
   const DB = 'https://pokelink-monitor-default-rtdb.firebaseio.com';
   // versão desta página: ao subir um index.html novo, troque este número. O celular percebe sozinho e recarrega.
-  const VERSAO_PAGINA = '5';
+  const VERSAO_PAGINA = '6';
   async function conferirPagina() {
     try {
       const r = await fetch(location.pathname + '?nocache=' + Date.now(), { cache: 'no-store' });
@@ -269,7 +269,8 @@
           <div class="stats">
             <div><small>OURO/H</small><b style="color:var(--gold)">${c.lucro ? esc(c.lucro.h) : '—'}</b></div>
             <div><small>XP/H</small><b>${c.xpT ? esc(c.xpT.h) : '—'}</b></div>
-            <div><small>${sh ? '✦ SHINY' : 'CAPTURAS'}</small><b style="${sh ? 'color:#ffe08a' : ''}">${sh ? `${Number(c.shiny.vistos) || 0} / ${Number(c.shiny.pegos) || 0}` : c.capturas ? esc(c.capturas.v) : '—'}</b></div>
+            <div><small>CAPTURAS</small><b>${c.capturas ? esc(c.capturas.v) : '—'}</b></div>
+            <div title="Shiny vistos / pegos nesta hunt"><small style="color:var(--gold)">✦ SHINY</small><b style="color:${sh ? '#ffe08a' : 'var(--mut)'}">${c.shiny ? `${Number(c.shiny.vistos) || 0}<span style="font-size:11px;color:var(--mut)"> / </span>${Number(c.shiny.pegos) || 0}` : '—'}</b></div>
           </div></button>`; }).join('')}
       </section>
       ${kk || twOn ? `<section class="card sec fade"><h2 class="t">LIVES</h2>
