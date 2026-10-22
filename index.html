@@ -105,7 +105,7 @@
 (() => {
   const DB = 'https://pokelink-monitor-default-rtdb.firebaseio.com';
   // versão desta página: ao subir um index.html novo, troque este número. O celular percebe sozinho e recarrega.
-  const VERSAO_PAGINA = '4';
+  const VERSAO_PAGINA = '5';
   async function conferirPagina() {
     try {
       const r = await fetch(location.pathname + '?nocache=' + Date.now(), { cache: 'no-store' });
@@ -217,7 +217,11 @@
     return `<div class="xpbar" title="${esc(Number(p.atual).toLocaleString('pt-BR'))} / ${esc(Number(p.total).toLocaleString('pt-BR'))} xp"><i style="width:${pct}%"></i><span>${curto(p.atual)} / ${curto(p.total)} xp</span></div>
       <div class="mut" style="font-size:11px;text-align:right;margin-top:2px">${pct.toLocaleString('pt-BR')}% · faltam ${curto(p.total - p.atual)} para o próximo nível</div>`;
   }
-  const avatar = (c) => (c.perfil && urlOk(c.perfil.img) ? `<img class="avatar" src="${urlOk(c.perfil.img)}" alt="">` : `<span class="num" style="width:44px;height:44px;font-size:22px">${esc(c.n)}</span>`);
+  // a mesma imagem em todas as contas não é o ícone do perfil (ex.: moeda): usa o número colorido
+  const CORES_NUM = [['#4a2a63', '#8a5cc7', '#f0e2ff'], ['#1f3f6a', '#4f8fd8', '#dbeaff'], ['#1f4a2f', '#4fb06a', '#d8f5e0'], ['#5a3412', '#d0882f', '#ffe6c8']];
+  const avatarIgual = () => { const im = ((dados && dados.contas) || []).map((c) => c.perfil && c.perfil.img).filter(Boolean); return im.length > 1 && new Set(im).size === 1; };
+  const numCor = (c) => { const k = CORES_NUM[(Number(c.n) - 1) % 4] || CORES_NUM[0]; return `background:${k[0]};border-color:${k[1]};color:${k[2]}`; };
+  const avatar = (c) => (!avatarIgual() && c.perfil && urlOk(c.perfil.img) ? `<img class="avatar" src="${urlOk(c.perfil.img)}" alt="">` : `<span class="num" style="width:44px;height:44px;font-size:22px;${numCor(c)}">${esc(c.n)}</span>`);
   // destaque dourado: shiny vistos e pegos (ACHADOS · HUNT do jogo)
   function blocoShiny(vistos, pegos, titulo, sub) {
     return `<section class="shiny fade" aria-label="Shiny: ${vistos} vistos e ${pegos} pegos">
