@@ -73,6 +73,16 @@
   .shiny .rot { font-family: "Barlow Condensed", sans-serif; font-weight: 700; letter-spacing: 1.2px; font-size: 14px; color: #f2c75c; }
   .chip-sh { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 99px; font-size: 12px; font-weight: 700; background: #3a2a12; border: 1px solid #c99a3e; color: #ffe08a; }
   @media (prefers-reduced-motion: no-preference) { .shiny .estrela { animation: brilho 2.4s ease-in-out infinite; } @keyframes brilho { 50% { opacity: .15; transform: scale(.8); } } }
+  /* barra de XP do treinador (igual à do jogo) */
+  .xpbar { position: relative; height: 16px; border-radius: 5px; overflow: hidden; background: #16202e; border: 1px solid #2c3e55; }
+  .xpbar i { position: absolute; left: 0; top: 0; bottom: 0; background: linear-gradient(#6fc0ff, #3f8fd8 60%, #2f6fb8); }
+  .xpbar span { position: relative; display: block; text-align: center; font-size: 11px; font-weight: 700; line-height: 14px; color: #fff; text-shadow: 0 1px 2px #000, 0 0 3px #000; }
+  .avatar { width: 44px; height: 44px; border-radius: 10px; background: var(--card2); border: 1px solid var(--line); object-fit: contain; image-rendering: pixelated; flex: none; }
+  .stats { display: flex; width: 100%; border-top: 1px solid #3a2030; padding-top: 10px; }
+  .stats > div { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 1px; }
+  .stats > div + div { border-left: 1px solid #3a2030; }
+  .stats small { font-size: 10px; letter-spacing: .5px; color: var(--mut); }
+  .stats b { font-size: 15px; }
   .msg { padding: 28px 18px; text-align: center; color: var(--mut); }
   .entrar { display: flex; flex-direction: column; gap: 14px; padding: 22px 18px; }
   .entrar input { width: 100%; min-height: 52px; padding: 0 14px; border-radius: 12px; background: var(--card2); border: 1px solid var(--line); color: var(--gold);
@@ -95,7 +105,7 @@
 (() => {
   const DB = 'https://pokelink-monitor-default-rtdb.firebaseio.com';
   // versão desta página: ao subir um index.html novo, troque este número. O celular percebe sozinho e recarrega.
-  const VERSAO_PAGINA = '3';
+  const VERSAO_PAGINA = '4';
   async function conferirPagina() {
     try {
       const r = await fetch(location.pathname + '?nocache=' + Date.now(), { cache: 'no-store' });
@@ -200,6 +210,14 @@
       <p class="mut" style="margin:-8px 0 0"><span id="quando">${quando()}</span>${erro ? ` · <span style="color:var(--warnTxt)">${esc(erro)}</span>` : ''}</p>`;
   }
 
+  // perfil do treinador: barra de XP como a do jogo
+  function xpBar(p) {
+    if (!p) return '';
+    const pct = Math.max(0, Math.min(100, Number(p.pct) || 0));
+    return `<div class="xpbar" title="${esc(Number(p.atual).toLocaleString('pt-BR'))} / ${esc(Number(p.total).toLocaleString('pt-BR'))} xp"><i style="width:${pct}%"></i><span>${curto(p.atual)} / ${curto(p.total)} xp</span></div>
+      <div class="mut" style="font-size:11px;text-align:right;margin-top:2px">${pct.toLocaleString('pt-BR')}% · faltam ${curto(p.total - p.atual)} para o próximo nível</div>`;
+  }
+  const avatar = (c) => (c.perfil && urlOk(c.perfil.img) ? `<img class="avatar" src="${urlOk(c.perfil.img)}" alt="">` : `<span class="num" style="width:44px;height:44px;font-size:22px">${esc(c.n)}</span>`);
   // destaque dourado: shiny vistos e pegos (ACHADOS · HUNT do jogo)
   function blocoShiny(vistos, pegos, titulo, sub) {
     return `<section class="shiny fade" aria-label="Shiny: ${vistos} vistos e ${pegos} pegos">
@@ -235,16 +253,19 @@
       </section>
       <section style="display:flex;flex-direction:column;gap:10px">
         <h2 class="t">CONTAS</h2>
-        ${cs.map((c, i) => { const s = st(c); return `<button class="card conta fade" data-conta="${i}" aria-label="Ver ${esc(c.nick)}">
-          <div class="row" style="width:100%"><span class="num">${esc(c.n)}</span>
-            <div class="grow"><div class="ell" style="font-weight:700">${esc(c.nick)} <span class="mut" style="font-size:13px;font-weight:500">${c.nivel ? '· Nv ' + esc(c.nivel) : ''}</span></div>
-              <div class="mut ell">${c.hunt ? esc(c.hunt) : c.antigo ? 'últimos dados conhecidos' : 'sem hunt agora'}</div>
-              ${c.shiny && (c.shiny.vistos || c.shiny.pegos) ? `<span class="chip-sh" style="margin-top:4px">✦ ${Number(c.shiny.vistos) || 0} ${Number(c.shiny.vistos) === 1 ? 'visto' : 'vistos'} · ${Number(c.shiny.pegos) || 0} ${Number(c.shiny.pegos) === 1 ? 'pego' : 'pegos'}</span>` : ''}</div>
-            <span class="row" style="gap:6px;font-size:12px;font-weight:600;color:${corTxt(s[1])}"><span class="dot" style="background:${corDot(s[1])}"></span>${esc(s[0])}</span></div>
-          <div class="g3" style="width:100%">
-            <div class="mini"><small>Ouro/h</small><b style="color:var(--gold)">${c.lucro ? esc(c.lucro.h) : '—'}</b></div>
-            <div class="mini"><small>XP/h</small><b>${c.xpT ? esc(c.xpT.h) : '—'}</b></div>
-            <div class="mini"><small>Capturas</small><b>${c.capturas ? esc(c.capturas.v) : '—'}</b></div>
+        ${cs.map((c, i) => { const s = st(c); const sh = c.shiny && (c.shiny.vistos || c.shiny.pegos); return `<button class="card conta fade" data-conta="${i}" aria-label="Ver ${esc(c.nick)}">
+          <div class="row" style="width:100%;align-items:flex-start">${avatar(c)}
+            <div class="grow">
+              <div class="row sp" style="gap:8px;margin-bottom:5px"><b class="ell" style="font-size:16px">${esc(c.nick)}</b><span class="mut" style="font-size:13px;font-weight:600;flex:none">${c.nivel ? 'Nv ' + esc(c.nivel) : ''}</span></div>
+              ${xpBar(c.perfil)}
+            </div></div>
+          <div class="row sp" style="width:100%;gap:8px">
+            <span class="mut ell" style="font-size:13px">${c.hunt ? esc(c.hunt) : c.antigo ? 'últimos dados conhecidos' : 'sem hunt agora'}</span>
+            <span class="row" style="gap:6px;font-size:12px;font-weight:600;flex:none;color:${corTxt(s[1])}"><span class="dot" style="background:${corDot(s[1])}"></span>${esc(s[0])}</span></div>
+          <div class="stats">
+            <div><small>OURO/H</small><b style="color:var(--gold)">${c.lucro ? esc(c.lucro.h) : '—'}</b></div>
+            <div><small>XP/H</small><b>${c.xpT ? esc(c.xpT.h) : '—'}</b></div>
+            <div><small>${sh ? '✦ SHINY' : 'CAPTURAS'}</small><b style="${sh ? 'color:#ffe08a' : ''}">${sh ? `${Number(c.shiny.vistos) || 0} / ${Number(c.shiny.pegos) || 0}` : c.capturas ? esc(c.capturas.v) : '—'}</b></div>
           </div></button>`; }).join('')}
       </section>
       ${kk || twOn ? `<section class="card sec fade"><h2 class="t">LIVES</h2>
@@ -273,6 +294,8 @@
           <div class="mut">Conta ${esc(c.n)}${c.nivel ? ' · Nível ' + esc(c.nivel) : ''}${c.modo ? ' · ' + esc(c.modo) : ''}</div></div>
         <span class="pill ${s[1]}"><span class="dot" style="background:${corDot(s[1])}"></span>${esc(s[0])}</span>
       </header>
+      ${c.perfil ? `<div class="card fade" style="padding:12px;display:flex;gap:12px;align-items:center">${avatar(c)}<div class="grow">
+        <div class="row sp" style="margin-bottom:5px"><span class="mut" style="letter-spacing:.6px">XP DO TREINADOR</span><b style="font-size:13px">${c.nivel ? 'Nv ' + esc(c.nivel) : ''}</b></div>${xpBar(c.perfil)}</div></div>` : ''}
       <div class="g3 fade">
         <div class="mini card"><small>Ouro</small><b style="color:var(--gold)">${esc(c.ouro || '—')}</b></div>
         <div class="mini card"><small>Gemas</small><b>${esc(c.gemas || '—')}</b></div>
