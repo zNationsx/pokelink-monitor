@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#120810">
+<meta name="theme-color" content="#141417">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="robots" content="noindex">
@@ -13,9 +13,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   /* PokeLink Monitor — página do celular. Só LÊ o resumo que o PokeLink do PC manda. */
-  :root { --bg: #120810; --card: #1f0f1a; --card2: #2a1424; --line: #4a2a3a; --txt: #ffe9f3; --mut: #c8a6b8;
-    --gold: #f2c75c; --frame: #c99a3e; --frame2: #6b4a2a; --ok: #6fdc95; --okTxt: #bff0cf; --warn: #ffb35c; --warnTxt: #ffd3a1;
-    --roxo: #8a5cc7; color-scheme: dark; }
+  :root { --bg: #141417; --card: #1a1a1e; --card2: #202024; --line: #2a2a31; --txt: #e9e9ee; --mut: #8d8d98;
+    --gold: #9ff06d; --frame: #3a4a30; --frame2: #2a2a31; --ok: #6fdc3f; --okTxt: #cfe9c0; --warn: #e4a62b; --warnTxt: #efc065;
+    --roxo: #9146ff; color-scheme: dark; }
   * { box-sizing: border-box; }
   [hidden] { display: none !important; }
   html, body { margin: 0; background: var(--bg); color: var(--txt); font: 400 15px/1.4 Inter, system-ui, -apple-system, "Segoe UI", sans-serif; -webkit-text-size-adjust: 100%; }
@@ -24,7 +24,7 @@
   .wrap { max-width: 520px; margin: 0 auto; padding: 18px 16px 96px; display: flex; flex-direction: column; gap: 16px; }
   .t { font-family: "Barlow Condensed", "Arial Narrow", sans-serif; font-weight: 700; letter-spacing: 1.2px; color: var(--gold); margin: 0; font-size: 18px; }
   .mut { color: var(--mut); font-size: 12px; }
-  .frame { background: var(--card); border: 2px solid var(--frame); box-shadow: inset 0 0 0 2px var(--card), inset 0 0 0 3px var(--frame2); border-radius: 14px; }
+  .frame { background: var(--card); border: 1px solid var(--line); border-radius: 14px; }
   .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; }
   .row { display: flex; align-items: center; gap: 10px; }
   .sp { justify-content: space-between; }
@@ -36,61 +36,51 @@
   .mini b { font-weight: 700; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .big { font-family: "Barlow Condensed", sans-serif; font-weight: 700; font-size: 26px; line-height: 1.1; }
   .pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; }
-  .pill.ok { background: #1f2a1c; border: 1px solid #3f6b45; color: var(--okTxt); }
-  .pill.warn { background: #2c2015; border: 1px solid #6b4a25; color: var(--warnTxt); }
+  .pill.ok { background: #1d2619; border: 1px solid #39562c; color: var(--okTxt); }
+  .pill.warn { background: #241f16; border: 1px solid #4a3a18; color: var(--warnTxt); }
   .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
   .bar { height: 8px; border-radius: 99px; background: var(--card2); overflow: hidden; }
   .bar i { display: block; height: 100%; }
-  .logo { width: 40px; height: 40px; border-radius: 10px; background: #3a1820; border: 2px solid var(--frame); box-shadow: inset 0 0 0 2px #3a1820, inset 0 0 0 3px #7a5a2c; display: grid; place-items: center; flex: none; }
+  .logo { width: 40px; height: 40px; border-radius: 11px; background: #1b2418; border: 1px solid #39562c; display: grid; place-items: center; flex: none; }
   .conta { display: flex; flex-direction: column; gap: 10px; padding: 14px; text-align: left; width: 100%; cursor: pointer; }
   .conta:active { transform: translateY(1px); }
-  .num { width: 32px; height: 32px; border-radius: 8px; background: #4a2a63; border: 1px solid var(--roxo); display: grid; place-items: center; font-family: "Barlow Condensed", sans-serif; font-weight: 700; font-size: 18px; color: #f0e2ff; flex: none; }
+  .num { width: 32px; height: 32px; border-radius: 9px; background: #202024; border: 1px solid #33333a; display: grid; place-items: center; font-family: "Barlow Condensed", sans-serif; font-weight: 700; font-size: 18px; color: #c9c9d1; flex: none; }
   .ell { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  nav.tabs { position: fixed; left: 0; right: 0; bottom: 0; padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px)); background: rgba(18, 8, 16, .94); backdrop-filter: blur(8px); border-top: 1px solid #2a1424; }
+  nav.tabs { position: fixed; left: 0; right: 0; bottom: 0; padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px)); background: rgba(20, 20, 23, .94); backdrop-filter: blur(8px); border-top: 1px solid var(--line); }
   nav.tabs .in { max-width: 520px; margin: 0 auto; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-  .tab { min-height: 48px; border-radius: 12px; background: var(--card); border: 2px solid var(--line); display: flex; align-items: center; justify-content: center; gap: 8px;
+  .tab { min-height: 48px; border-radius: 12px; background: var(--card); border: 1px solid var(--line); color: var(--mut); display: flex; align-items: center; justify-content: center; gap: 8px;
     font-family: "Barlow Condensed", sans-serif; font-weight: 700; font-size: 16px; letter-spacing: 1px; cursor: pointer; }
-  .tab.on { background: #3a1820; border-color: var(--frame); box-shadow: inset 0 0 0 2px #3a1820, inset 0 0 0 3px #7a5a2c; color: var(--gold); }
-  .badge { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 99px; background: var(--warn); color: #2a1406; font: 700 12px Inter, sans-serif; display: grid; place-items: center; }
+  .tab.on { background: #1d2619; border-color: #39562c; color: var(--gold); }
+  .badge { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 99px; background: var(--warn); color: #221a06; font: 700 12px Inter, sans-serif; display: grid; place-items: center; }
   .icon-btn { width: 44px; height: 44px; border-radius: 12px; background: var(--card); border: 1px solid var(--line); display: grid; place-items: center; cursor: pointer; flex: none; }
   .sec { padding: 14px; display: flex; flex-direction: column; gap: 10px; }
-  .cap { display: flex; align-items: center; gap: 10px; padding-bottom: 8px; border-bottom: 1px solid #3a2030; }
+  .cap { display: flex; align-items: center; gap: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
   .cap:last-child { border-bottom: 0; padding-bottom: 0; }
   .img { width: 36px; height: 36px; border-radius: 8px; background: var(--card2); object-fit: contain; flex: none; image-rendering: pixelated; }
   .chips { display: flex; flex-wrap: wrap; gap: 6px; }
-  .chip { padding: 3px 8px; border-radius: 99px; background: var(--card2); border: 1px solid var(--line); font-size: 12px; color: #e6cfd8; }
+  .chip { padding: 3px 8px; border-radius: 99px; background: var(--card2); border: 1px solid var(--line); font-size: 12px; color: #c9c9d1; }
   .itens { display: flex; flex-wrap: wrap; gap: 8px; }
   .it { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px 3px 4px; border-radius: 8px; background: var(--card2); font-size: 12px; font-weight: 600; }
   .it img { width: 22px; height: 22px; object-fit: contain; image-rendering: pixelated; }
   .kv { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; }
   .kv span:last-child { color: var(--mut); text-align: right; }
   .aviso { display: flex; gap: 12px; padding: 12px; }
-  .shiny { position: relative; overflow: hidden; padding: 14px; border-radius: 14px; border: 2px solid #f2c75c;
-    background: radial-gradient(120% 140% at 50% -20%, #5a3a12 0%, #2a1424 55%, #1f0f1a 100%); box-shadow: inset 0 0 0 2px #1f0f1a, inset 0 0 0 3px #8a6a2a, 0 0 18px rgba(242, 199, 92, .18); }
-  .shiny .estrela { position: absolute; color: #ffe08a; opacity: .55; font-size: 14px; pointer-events: none; }
-  .shiny .n { font-family: "Barlow Condensed", sans-serif; font-weight: 700; font-size: 44px; line-height: 1; color: #ffe08a; text-shadow: 0 0 12px rgba(255, 224, 138, .35); }
-  .shiny .n.zero { color: #8a6a7a; text-shadow: none; }
-  .shiny .rot { font-family: "Barlow Condensed", sans-serif; font-weight: 700; letter-spacing: 1.2px; font-size: 14px; color: #f2c75c; }
-  .chip-sh { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 99px; font-size: 12px; font-weight: 700; background: #3a2a12; border: 1px solid #c99a3e; color: #ffe08a; }
+  .shiny { position: relative; overflow: hidden; padding: 16px; border-radius: 14px; border: 1px solid #39562c; background: #1b2418; }
+  .shiny .estrela { position: absolute; color: #9ff06d; opacity: .25; font-size: 13px; pointer-events: none; }
+  .shiny .n { font-family: "Barlow Condensed", sans-serif; font-weight: 700; font-size: 44px; line-height: 1; color: #9ff06d; }
+  .shiny .n.zero { color: #4e4e58; }
+  .shiny .rot { font-family: "Barlow Condensed", sans-serif; font-weight: 700; letter-spacing: 1.2px; font-size: 14px; color: #6fdc3f; }
+  .chip-sh { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 99px; font-size: 12px; font-weight: 700; background: #1d2619; border: 1px solid #39562c; color: #9ff06d; }
   @media (prefers-reduced-motion: no-preference) { .shiny .estrela { animation: brilho 2.4s ease-in-out infinite; } @keyframes brilho { 50% { opacity: .15; transform: scale(.8); } } }
-  /* barra de XP do treinador (igual à do jogo) */
-  .xpbar { position: relative; height: 16px; border-radius: 5px; overflow: hidden; background: #16202e; border: 1px solid #2c3e55; }
-  .xpbar i { position: absolute; left: 0; top: 0; bottom: 0; background: linear-gradient(#6fc0ff, #3f8fd8 60%, #2f6fb8); }
-  .xpbar span { position: relative; display: block; text-align: center; font-size: 11px; font-weight: 700; line-height: 14px; color: #fff; text-shadow: 0 1px 2px #000, 0 0 3px #000; }
-  .avatar { width: 44px; height: 44px; border-radius: 10px; background: var(--card2); border: 1px solid var(--line); object-fit: contain; image-rendering: pixelated; flex: none; }
-  .stats { display: flex; width: 100%; border-top: 1px solid #3a2030; padding-top: 10px; }
-  .stats > div { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 1px; }
-  .stats > div + div { border-left: 1px solid #3a2030; }
-  .stats small { font-size: 10px; letter-spacing: .5px; color: var(--mut); }
-  .stats b { font-size: 15px; }
   .msg { padding: 28px 18px; text-align: center; color: var(--mut); }
   .entrar { display: flex; flex-direction: column; gap: 14px; padding: 22px 18px; }
-  .entrar input { width: 100%; min-height: 52px; padding: 0 14px; border-radius: 12px; background: var(--card2); border: 1px solid var(--line); color: var(--gold);
+  .entrar input { width: 100%; min-height: 52px; padding: 0 14px; border-radius: 12px; background: var(--card2); border: 1px solid #33333a; color: var(--gold);
     font: 700 20px/1 ui-monospace, Consolas, monospace; letter-spacing: 2px; text-transform: uppercase; text-align: center; }
-  .entrar input:focus { outline: 2px solid var(--frame); outline-offset: 1px; }
-  .go { min-height: 50px; border-radius: 12px; border: 2px solid var(--frame); background: #3a1820; box-shadow: inset 0 0 0 2px #3a1820, inset 0 0 0 3px #7a5a2c;
-    color: var(--gold); font-family: "Barlow Condensed", sans-serif; font-weight: 700; font-size: 18px; letter-spacing: 1px; cursor: pointer; }
-  .erro { color: #ff9aa5; font-size: 13px; text-align: center; }
+  .entrar input:focus { outline: 2px solid #6fdc3f; outline-offset: 1px; }
+  .go { min-height: 50px; border-radius: 12px; border: 0; background: #6fdc3f;
+    color: #0f2605; font-family: "Barlow Condensed", sans-serif; font-weight: 700; font-size: 18px; letter-spacing: 1px; cursor: pointer; }
+  .go:active { background: #80ec50; }
+  .erro { color: #ff8b8b; font-size: 13px; text-align: center; }
   .sem-anim .fade, .sem-anim .shiny .estrela { animation: none !important; }
   @media (prefers-reduced-motion: no-preference) { .fade { animation: fade .18s ease-out; } @keyframes fade { from { opacity: 0; transform: translateY(4px); } } }
 </style>
@@ -104,15 +94,6 @@
 <script>
 (() => {
   const DB = 'https://pokelink-monitor-default-rtdb.firebaseio.com';
-  // versão desta página: ao subir um index.html novo, troque este número. O celular percebe sozinho e recarrega.
-  const VERSAO_PAGINA = '6';
-  async function conferirPagina() {
-    try {
-      const r = await fetch(location.pathname + '?nocache=' + Date.now(), { cache: 'no-store' });
-      const m = (await r.text()).match(/const VERSAO_PAGINA = '([^']+)'/);
-      if (m && m[1] !== VERSAO_PAGINA) location.replace(location.pathname + '?v=' + m[1]);
-    } catch (e) {}
-  }
   const app = document.getElementById('app');
   const tabs = document.getElementById('tabs');
   const esc = (t) => String(t == null ? '' : t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -129,7 +110,7 @@
   if (location.hash) { if (codigo.length >= 20) guarda.set('pl-codigo', codigo); history.replaceState(null, '', location.pathname); }
   let dados = null, tela = 'resumo', conta = 0, erro = '';
 
-  const LINK_SVG = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f2c75c" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>';
+  const LINK_SVG = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#9ff06d" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>';
   const STATUS = {
     farmando: ['Farmando', 'ok'], parada: ['Sem hunt', 'warn'], carregando: ['Carregando', 'warn'], travada: ['Travada', 'warn'],
     'sem resposta': ['Sem resposta', 'warn'], 'sem login': ['Sem login', 'warn'], pausado: ['Pausado', 'warn'], fechada: ['Fechada', 'warn'],
@@ -137,7 +118,7 @@
   const st = (c) => STATUS[c.status] || [c.status || '—', 'warn'];
   const corDot = (k) => (k === 'ok' ? 'var(--ok)' : 'var(--warn)');
   const corTxt = (k) => (k === 'ok' ? 'var(--okTxt)' : 'var(--warnTxt)');
-  const COR_AVISO = { erro: '#ffb35c', compra: '#ffb35c', kick: '#f2c75c', hunt: '#a985e0', shiny: '#6fdc95', pc: '#8ec5ff' };
+  const COR_AVISO = { erro: '#e4a62b', compra: '#e4a62b', kick: '#9ff06d', hunt: '#b89bff', shiny: '#6fdc3f', pc: '#8ec5ff' };
 
   function telaEntrar(msg) {
     tabs.hidden = true;
@@ -210,27 +191,15 @@
       <p class="mut" style="margin:-8px 0 0"><span id="quando">${quando()}</span>${erro ? ` · <span style="color:var(--warnTxt)">${esc(erro)}</span>` : ''}</p>`;
   }
 
-  // perfil do treinador: barra de XP como a do jogo
-  function xpBar(p) {
-    if (!p) return '';
-    const pct = Math.max(0, Math.min(100, Number(p.pct) || 0));
-    return `<div class="xpbar" title="${esc(Number(p.atual).toLocaleString('pt-BR'))} / ${esc(Number(p.total).toLocaleString('pt-BR'))} xp"><i style="width:${pct}%"></i><span>${curto(p.atual)} / ${curto(p.total)} xp</span></div>
-      <div class="mut" style="font-size:11px;text-align:right;margin-top:2px">${pct.toLocaleString('pt-BR')}% · faltam ${curto(p.total - p.atual)} para o próximo nível</div>`;
-  }
-  // a mesma imagem em todas as contas não é o ícone do perfil (ex.: moeda): usa o número colorido
-  const CORES_NUM = [['#4a2a63', '#8a5cc7', '#f0e2ff'], ['#1f3f6a', '#4f8fd8', '#dbeaff'], ['#1f4a2f', '#4fb06a', '#d8f5e0'], ['#5a3412', '#d0882f', '#ffe6c8']];
-  const avatarIgual = () => { const im = ((dados && dados.contas) || []).map((c) => c.perfil && c.perfil.img).filter(Boolean); return im.length > 1 && new Set(im).size === 1; };
-  const numCor = (c) => { const k = CORES_NUM[(Number(c.n) - 1) % 4] || CORES_NUM[0]; return `background:${k[0]};border-color:${k[1]};color:${k[2]}`; };
-  const avatar = (c) => (!avatarIgual() && c.perfil && urlOk(c.perfil.img) ? `<img class="avatar" src="${urlOk(c.perfil.img)}" alt="">` : `<span class="num" style="width:44px;height:44px;font-size:22px;${numCor(c)}">${esc(c.n)}</span>`);
   // destaque dourado: shiny vistos e pegos (ACHADOS · HUNT do jogo)
   function blocoShiny(vistos, pegos, titulo, sub) {
     return `<section class="shiny fade" aria-label="Shiny: ${vistos} vistos e ${pegos} pegos">
       <span class="estrela" style="left:7%;top:14%" aria-hidden="true">✦</span><span class="estrela" style="right:5%;bottom:14%;animation-delay:.8s" aria-hidden="true">✦</span>
       <span class="estrela" style="left:46%;bottom:10%;animation-delay:1.6s" aria-hidden="true">✧</span>
-      <div class="row sp" style="margin-bottom:10px"><h2 class="t" style="color:#ffe08a">✦ ${titulo}</h2><span class="mut">${sub}</span></div>
+      <div class="row sp" style="margin-bottom:10px"><h2 class="t" style="color:#9ff06d">✦ ${titulo}</h2><span class="mut">${sub}</span></div>
       <div class="g2" style="text-align:center">
         <div style="display:flex;flex-direction:column;gap:4px"><span class="n${vistos ? '' : ' zero'}">${vistos}</span><span class="rot">VISTOS</span></div>
-        <div style="display:flex;flex-direction:column;gap:4px;border-left:1px solid #5a3a2a"><span class="n${pegos ? '' : ' zero'}">${pegos}</span><span class="rot">PEGOS</span></div>
+        <div style="display:flex;flex-direction:column;gap:4px;border-left:1px solid #3a3a42"><span class="n${pegos ? '' : ' zero'}">${pegos}</span><span class="rot">PEGOS</span></div>
       </div></section>`;
   }
   function resumo() {
@@ -257,20 +226,16 @@
       </section>
       <section style="display:flex;flex-direction:column;gap:10px">
         <h2 class="t">CONTAS</h2>
-        ${cs.map((c, i) => { const s = st(c); const sh = c.shiny && (c.shiny.vistos || c.shiny.pegos); return `<button class="card conta fade" data-conta="${i}" aria-label="Ver ${esc(c.nick)}">
-          <div class="row" style="width:100%;align-items:flex-start">${avatar(c)}
-            <div class="grow">
-              <div class="row sp" style="gap:8px;margin-bottom:5px"><b class="ell" style="font-size:16px">${esc(c.nick)}</b><span class="mut" style="font-size:13px;font-weight:600;flex:none">${c.nivel ? 'Nv ' + esc(c.nivel) : ''}</span></div>
-              ${xpBar(c.perfil)}
-            </div></div>
-          <div class="row sp" style="width:100%;gap:8px">
-            <span class="mut ell" style="font-size:13px">${c.hunt ? esc(c.hunt) : c.antigo ? 'últimos dados conhecidos' : 'sem hunt agora'}</span>
-            <span class="row" style="gap:6px;font-size:12px;font-weight:600;flex:none;color:${corTxt(s[1])}"><span class="dot" style="background:${corDot(s[1])}"></span>${esc(s[0])}</span></div>
-          <div class="stats">
-            <div><small>OURO/H</small><b style="color:var(--gold)">${c.lucro ? esc(c.lucro.h) : '—'}</b></div>
-            <div><small>XP/H</small><b>${c.xpT ? esc(c.xpT.h) : '—'}</b></div>
-            <div><small>CAPTURAS</small><b>${c.capturas ? esc(c.capturas.v) : '—'}</b></div>
-            <div title="Shiny vistos / pegos nesta hunt"><small style="color:var(--gold)">✦ SHINY</small><b style="color:${sh ? '#ffe08a' : 'var(--mut)'}">${c.shiny ? `${Number(c.shiny.vistos) || 0}<span style="font-size:11px;color:var(--mut)"> / </span>${Number(c.shiny.pegos) || 0}` : '—'}</b></div>
+        ${cs.map((c, i) => { const s = st(c); return `<button class="card conta fade" data-conta="${i}" aria-label="Ver ${esc(c.nick)}">
+          <div class="row" style="width:100%"><span class="num">${esc(c.n)}</span>
+            <div class="grow"><div class="ell" style="font-weight:700">${esc(c.nick)} <span class="mut" style="font-size:13px;font-weight:500">${c.nivel ? '· Nv ' + esc(c.nivel) : ''}</span></div>
+              <div class="mut ell">${c.hunt ? esc(c.hunt) : c.antigo ? 'últimos dados conhecidos' : 'sem hunt agora'}</div>
+              ${c.shiny && (c.shiny.vistos || c.shiny.pegos) ? `<span class="chip-sh" style="margin-top:4px">✦ ${Number(c.shiny.vistos) || 0} ${Number(c.shiny.vistos) === 1 ? 'visto' : 'vistos'} · ${Number(c.shiny.pegos) || 0} ${Number(c.shiny.pegos) === 1 ? 'pego' : 'pegos'}</span>` : ''}</div>
+            <span class="row" style="gap:6px;font-size:12px;font-weight:600;color:${corTxt(s[1])}"><span class="dot" style="background:${corDot(s[1])}"></span>${esc(s[0])}</span></div>
+          <div class="g3" style="width:100%">
+            <div class="mini"><small>Ouro/h</small><b style="color:var(--gold)">${c.lucro ? esc(c.lucro.h) : '—'}</b></div>
+            <div class="mini"><small>XP/h</small><b>${c.xpT ? esc(c.xpT.h) : '—'}</b></div>
+            <div class="mini"><small>Capturas</small><b>${c.capturas ? esc(c.capturas.v) : '—'}</b></div>
           </div></button>`; }).join('')}
       </section>
       ${kk || twOn ? `<section class="card sec fade"><h2 class="t">LIVES</h2>
@@ -278,7 +243,7 @@
           <div class="kv"><span style="font-weight:600">Kick · ${esc(kk.slug)}</span><span>${kk.pts.toLocaleString('pt-BR')}${prox ? ' / ' + prox[0] : ''}</span></div>
           <div class="bar"><i style="width:${prox ? Math.min(100, (kk.pts / prox[0]) * 100) : 100}%;background:var(--ok)"></i></div>
           <span class="mut">${esc(kk.conta)} · ${prox ? `faltam ${prox[0] - kk.pts} pontos para ${prox[1]}` : 'todas as metas já dá para resgatar'}</span></div>` : ''}
-        ${twOn ? `<div class="kv" style="${kk ? 'padding-top:10px;border-top:1px solid #3a2030' : ''}"><span style="font-weight:600">Twitch</span>
+        ${twOn ? `<div class="kv" style="${kk ? 'padding-top:10px;border-top:1px solid #2a2a31' : ''}"><span style="font-weight:600">Twitch</span>
           <span style="color:${tw.length ? 'var(--okTxt)' : 'var(--mut)'}">${tw.length ? '✓ o jogo está contando o bônus' : 'nenhum bônus contando agora'}</span></div>` : ''}
       </section>` : ''}
       <div class="row" style="justify-content:center;padding-top:4px"><button class="mut" id="sair" style="background:none;border:0;text-decoration:underline;min-height:44px;cursor:pointer">Usar outro código</button></div>`;
@@ -294,13 +259,11 @@
     const s = st(c);
     const pk = c.pk || {};
     return `<header class="row">
-        <button class="icon-btn" id="voltar" aria-label="Voltar ao resumo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f2c75c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></button>
+        <button class="icon-btn" id="voltar" aria-label="Voltar ao resumo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ff06d" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></button>
         <div class="grow"><div class="t ell" style="font-size:24px;color:var(--txt);line-height:1">${esc(c.nick)}</div>
           <div class="mut">Conta ${esc(c.n)}${c.nivel ? ' · Nível ' + esc(c.nivel) : ''}${c.modo ? ' · ' + esc(c.modo) : ''}</div></div>
         <span class="pill ${s[1]}"><span class="dot" style="background:${corDot(s[1])}"></span>${esc(s[0])}</span>
       </header>
-      ${c.perfil ? `<div class="card fade" style="padding:12px;display:flex;gap:12px;align-items:center">${avatar(c)}<div class="grow">
-        <div class="row sp" style="margin-bottom:5px"><span class="mut" style="letter-spacing:.6px">XP DO TREINADOR</span><b style="font-size:13px">${c.nivel ? 'Nv ' + esc(c.nivel) : ''}</b></div>${xpBar(c.perfil)}</div></div>` : ''}
       <div class="g3 fade">
         <div class="mini card"><small>Ouro</small><b style="color:var(--gold)">${esc(c.ouro || '—')}</b></div>
         <div class="mini card"><small>Gemas</small><b>${esc(c.gemas || '—')}</b></div>
@@ -311,7 +274,7 @@
         <div class="grow" style="display:flex;flex-direction:column;gap:6px">
           <span class="mut" style="letter-spacing:.6px">EM CAMPO</span>
           <span style="font-weight:700;font-size:16px">${esc(pk.nome || '—')} <span class="mut" style="font-size:13px;font-weight:500">${esc(pk.lv || '')}</span></span>
-          ${pk.hp != null ? `<div class="row" style="gap:8px"><span class="mut" style="width:18px;font-size:10px">HP</span><div class="bar grow"><i style="width:${Number(pk.hp)}%;background:${pk.hp > 50 ? 'var(--ok)' : pk.hp > 20 ? 'var(--gold)' : '#ff7a85'}"></i></div></div>` : ''}
+          ${pk.hp != null ? `<div class="row" style="gap:8px"><span class="mut" style="width:18px;font-size:10px">HP</span><div class="bar grow"><i style="width:${Number(pk.hp)}%;background:${pk.hp > 50 ? 'var(--ok)' : pk.hp > 20 ? 'var(--gold)' : '#ff8b8b'}"></i></div></div>` : ''}
           <span class="mut">${c.hunt ? esc(c.hunt) : 'sem hunt agora'}</span>
         </div>
       </section>
@@ -344,9 +307,9 @@
     const lista = dados.avisos || [];
     guarda.set('pl-visto', String(Date.now()));
     return `<header class="row sp"><span class="t" style="font-size:26px">AVISOS</span><span class="mut">do mais novo para o mais antigo</span></header>
-      ${lista.length ? lista.map((a) => `<div class="card aviso fade"><span class="dot" style="width:10px;height:10px;margin-top:5px;background:${COR_AVISO[a.tipo] || '#c8a6b8'}"></span>
+      ${lista.length ? lista.map((a) => `<div class="card aviso fade"><span class="dot" style="width:10px;height:10px;margin-top:5px;background:${COR_AVISO[a.tipo] || '#8d8d98'}"></span>
         <div class="grow"><div class="row sp" style="align-items:baseline"><b>${esc(a.titulo)}</b><span class="mut" style="flex:none">${a.em ? hora(a.em) : ''}</span></div>
-        <div style="font-size:13px;color:#d9bccb">${esc(a.texto)}</div></div></div>`).join('') : '<div class="card msg">Nenhum aviso por enquanto. Aqui aparecem conta travada, metas da Kick, shiny, troca de hunt e Auto Compra parada.</div>'}`;
+        <div style="font-size:13px;color:#c9c9d1">${esc(a.texto)}</div></div></div>`).join('') : '<div class="card msg">Nenhum aviso por enquanto. Aqui aparecem conta travada, metas da Kick, shiny, troca de hunt e Auto Compra parada.</div>'}`;
   }
 
   function desenhar(anim) {
@@ -379,10 +342,7 @@
   setInterval(() => { if (!document.hidden && codigo && !aoVivo) buscar(); }, 30000);
   // o "atualizado há" anda sozinho
   setInterval(() => { const q = document.getElementById('quando'); if (q) q.textContent = quando(); }, 1000);
-  conferirPagina();
-  setInterval(conferirPagina, 10 * 60 * 1000);
   document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) conferirPagina();
     if (document.hidden || !codigo) return;
     buscar();
     if (!es || es.readyState === 2) ligarAoVivo(); // voltou para a página: reconecta se caiu
